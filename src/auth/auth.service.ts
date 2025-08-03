@@ -3,11 +3,13 @@ import { PrismaService } from "../prisma/prisma.service";
 import { AuthDtoSignUp, AuthDtoSignIn } from "./dto";
 import * as bcrypt from "bcrypt";
 import { Prisma } from "@prisma/client";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
 
-    constructor(private prisma: PrismaService) {
+    constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {
     }
 
     async signup(dto: AuthDtoSignUp) {
@@ -49,14 +51,22 @@ export class AuthService {
         // if password incorrect throw exception
         if (!isMatch) throw new ForbiddenException("Credentials incorrect");
         // if all ok send back user
-        const { hash, ...theRest } = user;
-        return theRest;
+        return this.signToken(user.id, user.email);
     }
 
-    // async temporaryFunction() {
-    //     const users = await this.prisma.user.findMany();
-    //     if(!users) throw new ForbiddenException("No users found");
-    //     console.log(users);
-    // }
+    async signToken(userId: number, email: string): Promise<{access_token: string}> {
+        const payload = {
+            sub: userId,
+            email: email
+        }
 
+        const token = await this.jwt.signAsync(payload, {
+            expiresIn: '15m',
+            secret: this.config.get("JWT_SECRET")
+        });
+
+        return {
+            access_token: token
+        };
+    }
 }

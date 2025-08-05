@@ -46,6 +46,40 @@ describe('App e2e', () => {
           .expectStatus(HttpStatus.BAD_REQUEST);
       });
 
+      it("should throw error if password empty", () => {
+        const { password, ...theRest } = dto;
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signup")
+          .withBody(theRest)
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it("should throw error if firstName empty", () => {
+        const { firstName, ...theRest } = dto;
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signup")
+          .withBody(theRest)
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it("should throw error if lastName empty", () => {
+        const { lastName, ...theRest } = dto;
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signup")
+          .withBody(theRest)
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it("should throw error if no body provided", () => {
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signup")
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
       it("Should sign up", () => {
         return pactum
           .spec()
@@ -62,6 +96,51 @@ describe('App e2e', () => {
           .post("http://localhost:3333/auth/signin")
           .withBody(dto)
           .expectStatus(HttpStatus.OK);
+      });
+
+      it("should throw error if email empty", () => {
+        const { email, ...theRest } = dto;
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signin")
+          .withBody(theRest)
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it("should throw error if password empty", () => {
+        const { password, ...theRest } = dto;
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signin")
+          .withBody(theRest)
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+
+      it("should throw error if no body provided", () => {
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signin")
+          .expectStatus(HttpStatus.BAD_REQUEST);
+      });
+      
+      it("should throw error if email does not exist", () => {
+        const new_dto = dto;
+        new_dto.email = "doesnt_exist@nope.com";
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signin")
+          .withBody(new_dto)
+          .expectStatus(HttpStatus.FORBIDDEN);
+      });
+
+      it("should throw error if password incorrect", () => {
+        const new_dto = dto;
+        new_dto.password = "something_wrong";
+        return pactum
+          .spec()
+          .post("http://localhost:3333/auth/signin")
+          .withBody(new_dto)
+          .expectStatus(HttpStatus.FORBIDDEN);
       });
     });
   });

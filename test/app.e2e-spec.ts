@@ -4,6 +4,7 @@ import { HttpStatus, INestApplication, ValidationPipe } from "@nestjs/common";
 import { PrismaService } from "../src/prisma/prisma.service";
 import * as pactum from "pactum";
 import { AuthDtoSignIn, AuthDtoSignUp } from "../src/auth/dto";
+import { EditUserDto } from "src/user/dto";
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -95,7 +96,8 @@ describe('App e2e', () => {
           .spec()
           .post("http://localhost:3333/auth/signin")
           .withBody(dto)
-          .expectStatus(HttpStatus.OK);
+          .expectStatus(HttpStatus.OK)
+          .stores('userAt', 'access_token');
       });
 
       it("should throw error if email empty", () => {
@@ -146,9 +148,40 @@ describe('App e2e', () => {
   });
 
   describe("User", () => {
-    describe("Get me", () => {});
+    describe("Get me", () => {
+      it("should get current user", () => {
+        return pactum 
+          .spec()
+          .get("http://localhost:3333/users/me")
+          .withHeaders({
+            Authorization: "Bearer $S{userAt}"
+          })
+          .expectStatus(200)
+          .inspect();
+      });
+    });
 
-    describe("Edit user", () => {});
+    describe("Edit user", () => {
+      it("should edit user based on userId", () => {
+        const new_dto = {
+          id: 4,
+          email: "newemail@newdomain.com",
+          firstName: "new_firstName",
+          lastName: "new_lastName"
+        };
+        return pactum
+          .spec()
+          .patch("http://localhost:3333/users")
+          .withHeaders({
+            Authorization: "Bearer $S{userAt}"
+          })
+          .withBody(new_dto)
+          .expectStatus(HttpStatus.OK)
+          .expectBodyContains(new_dto.email)
+          .expectBodyContains(new_dto.firstName)
+          .expectBodyContains(new_dto.lastName);
+      });
+    });
   });
 
   describe("Bookmarks", () => {

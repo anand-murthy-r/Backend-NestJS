@@ -7,7 +7,7 @@ export const getUser = createParamDecorator(
         const request = ctx
             .switchToHttp()
             .getRequest();
-        if(data) return { data: request.user[data] };
+        if(data) return request.user[data];
         return request.user;
     }
 );
